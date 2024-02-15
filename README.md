@@ -22,12 +22,12 @@ You can read more about the data sources [here](https://www.dwd.de/EN/ourservice
 
 Printing help:
 ```bash
-docker run --rm -v ${PWD}/output:/app/output hstin-de/gribdl --help
+docker run --rm -v ${PWD}/output:/app/output ghcr.io/hstin-de/gribdl --help
 ```
 
 Downloading 8h T_2M from ICON-EU:
 ```bash
-docker run --rm -v ${PWD}/output:/app/output hstin-de/gribdl dwd icon-eu --param=T_2M --maxStep=8
+docker run --rm -v ${PWD}/output:/app/output ghcr.io/hstin-de/gribdl dwd icon-eu --param=T_2M --maxStep=8
 ```
 
 # Building
@@ -49,17 +49,32 @@ docker build -t hstin-de/gribdl .
 # Usage Without Docker
 
 You can also run gribdl without docker but its not recommended as
-all the dependencies are included in the docker image.
+all the dependencies are included within the docker image.
 
 ### Prequisites:
 - go 1.21.5
 - [cdo 1.9.10 with netcdf and grib2 support](https://gist.github.com/jeffbyrnes/e56d294c216fbd30fd2fd32e576db81c)
 
-Running:
+
+### Generating Weights
+
+The weights are used to interpolate DWD ICON Data from an icosahedral grid to a regular grid. You can generate the weights with the following commands:
+```bash
+chmod +x generateWeights.sh
+./generateWeights.sh
+```
+
+This will download about 1.2GB of data and generate the weights.
+The computed weights are stored in the `weights` directory.
+
+### Running:
+You can run gribdl with the following command without compiling it into a standalone binary:
 ```bash
 cd src && go run main.go --help
 ```
-Building:
+
+### Building:
+You can also build gribdl into a standalone binary with the following command:
 ```bash
 cd src && go build main.go -o gribdl
 ```
