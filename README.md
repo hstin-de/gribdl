@@ -6,7 +6,7 @@ gribdl makes it easy and to download weather data fast from the [Deutscher Wette
 - DWD ICON-EU
 - DWD ICON-D2
 - DWD ICON
-- NOAA GFS (not yet implemented)
+- NOAA GFS
 - NOAA NAM (not yet implemented)
 
 You can read more about the data sources [here](https://www.dwd.de/EN/ourservices/opendata/opendata.html) and [here](https://www.ncdc.noaa.gov/data-access/model-data/model-datasets/global-forcast-system-gfs).
@@ -28,6 +28,11 @@ docker run --rm -v ${PWD}/output:/app/output ghcr.io/hstin-de/gribdl --help
 Downloading 8h T_2M from ICON-EU:
 ```bash
 docker run --rm -v ${PWD}/output:/app/output ghcr.io/hstin-de/gribdl dwd icon-eu --param=T_2M --maxStep=8
+```
+
+Downloading 8h TMP from GFP:
+```bash
+docker run --rm -v ${PWD}/output:/app/output ghcr.io/hstin-de/gribdl noaa gfs --param=TMP --maxStep=8
 ```
 
 # Building

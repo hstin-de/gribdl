@@ -3,7 +3,6 @@ package downloader
 import (
 	"fmt"
 	"time"
-	// "fmt"
 	"bufio"
 	"io"
 	"log"
@@ -158,15 +157,13 @@ func (wdp *NOAADownloader) getIndexFile(url string) (IndexData, error) {
 }
 
 func (wdp *NOAADownloader) downloadAndProcessFile(url string, index IndexData, param string, retries int) error {
-
-	byteRange := fmt.Sprintf("bytes=%d-%d", index[param][wdp.height].Start, index[param][wdp.height].End)
-
+	
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return fmt.Errorf("error creating request: %v", err)
 	}
 
-	req.Header.Set("Range", byteRange)
+	req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", index[param][wdp.height].Start, index[param][wdp.height].End))
 
 	resp, err := wdp.httpClient.Do(req)
 
