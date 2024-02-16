@@ -26,7 +26,7 @@ type DWDModel struct {
 	breakPoint                    int
 }
 
-var models = map[string]DWDModel{
+var dwdModels = map[string]DWDModel{
 	"icon": {
 		model:                         "icon",
 		openDataDeliveryOffsetMinutes: 240,
@@ -138,7 +138,7 @@ func formatString(format string, args ...interface{}) string {
 	return result
 }
 
-func NewWeatherDataProcessor(options DWDOpenDataDownloaderOptions) *DWDOpenDataDownloader {
+func NewDWDOpenDataDownloader(options DWDOpenDataDownloaderOptions) *DWDOpenDataDownloader {
 
 	tmpFolder := "/tmp/gribdl/dwd"
 
@@ -148,7 +148,6 @@ func NewWeatherDataProcessor(options DWDOpenDataDownloaderOptions) *DWDOpenDataD
 	}
 	weightsDir := currentPath + "/weights"
 
-	// Create the tmp folder if it doesn't exist
 	if _, err := os.Stat(tmpFolder); os.IsNotExist(err) {
 		os.MkdirAll(tmpFolder, 0755)
 	}
@@ -158,8 +157,8 @@ func NewWeatherDataProcessor(options DWDOpenDataDownloaderOptions) *DWDOpenDataD
 		param:           options.Param,
 		outputFolder:    options.OutputFolder,
 		tmpFolder:       tmpFolder,
-		descriptionFile: weightsDir + "/" + models[options.ModelName].model + "_description.txt",
-		weightsFile:     weightsDir + "/" + models[options.ModelName].model + "_weights.nc",
+		descriptionFile: weightsDir + "/" + dwdModels[options.ModelName].model + "_description.txt",
+		weightsFile:     weightsDir + "/" + dwdModels[options.ModelName].model + "_weights.nc",
 		maxStep:         options.MaxStep,
 		regrid:          options.Regrid,
 		modelDetails:    options.ModelDetails,
@@ -279,10 +278,10 @@ func (wdp *DWDOpenDataDownloader) downloadAndProcessFile(url string, retries int
 }
 
 func StartDWDDownloader(options DWDOpenDataDownloaderOptions) map[int][]byte {
-	modelDetails, exists := models[options.ModelName]
+	modelDetails, exists := dwdModels[options.ModelName]
 	if !exists {
 		log.Println("[MAIN] Model not found. Available models are:")
-		for key := range models {
+		for key := range dwdModels {
 			log.Println("-", key)
 		}
 		return nil
@@ -290,7 +289,7 @@ func StartDWDDownloader(options DWDOpenDataDownloaderOptions) map[int][]byte {
 
 	options.ModelDetails = modelDetails
 
-	wdp := NewWeatherDataProcessor(options)
+	wdp := NewDWDOpenDataDownloader(options)
 
 	timestamp := wdp.getMostRecentModelTimestamp()
 

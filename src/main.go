@@ -12,11 +12,12 @@ const (
 	defaultParam   = "t_2m"
 	defaultMaxStep = 10
 	defaultOutput  = "output"
+	defaultHeight  = "surface"
 )
 
 var (
 	supportedDWDModels  = []string{"icon", "icon-d2", "icon-eu"}
-	supportedNOAAModels = []string{"gfs", "nam"}
+	supportedNOAAModels = []string{"gfs"}
 )
 
 func contains(s []string, e string) bool {
@@ -72,6 +73,7 @@ func main() {
 	outputFolder := flag.String("output", defaultOutput, "Output folder")
 	param := flag.String("param", defaultParam, "Parameter name")
 	maxStep := flag.Int("maxStep", defaultMaxStep, "Max download steps")
+	height := flag.String("height", defaultHeight, "Height (only for NOAA)")
 	flag.Parse()
 
 	if _, err := os.Stat(*outputFolder); os.IsNotExist(err) {
@@ -99,7 +101,14 @@ func main() {
 			printHelp()
 			os.Exit(1)
 		}
-		fmt.Println("NOAA Download not implemented yet")
+
+		downloader.StartNOAADownloader(downloader.NOAADownloaderOptions{
+			ModelName:    model,
+			Param:        *param,
+			Height:       *height,
+			OutputFolder: *outputFolder,
+			MaxStep:      *maxStep,
+		})
 
 	default:
 		fmt.Println("Error: Unrecognized command, expected 'dwd' or 'noaa'")
