@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	defaultParam   = "t_2m"
+	defaultParam   = "REPLACE_WITH_TEMPERATURE"
 	defaultMaxStep = 10
 	defaultOutput  = "output"
 	defaultHeight  = "surface"
@@ -36,11 +36,13 @@ func printHelp() {
 	fmt.Printf("  noaa [model<%s>]\n\n", strings.Join(supportedNOAAModels, "|"))
 	fmt.Println("Options:")
 	fmt.Println("  --param string")
-	fmt.Println("        Parameter name (default \"t_2m\")")
+	fmt.Println("        Parameter name (defaults to the temperature parameter of the model)")
 	fmt.Println("  --maxStep int")
 	fmt.Println("        Max download steps (default 10)")
 	fmt.Println("  --output string")
 	fmt.Println("        Output folder (default \"output\")")
+	fmt.Println("  --height string")
+	fmt.Println("        Height (only for NOAA) (default \"surface\")")
 }
 
 func main() {
@@ -87,6 +89,11 @@ func main() {
 			printHelp()
 			os.Exit(1)
 		}
+		
+		if *param == defaultParam {
+			*param = "T_2M"
+		}
+
 		downloader.StartDWDDownloader(downloader.DWDOpenDataDownloaderOptions{
 			ModelName:    model,
 			Param:        *param,
@@ -100,6 +107,11 @@ func main() {
 			fmt.Println("Error: Unsupported model", model)
 			printHelp()
 			os.Exit(1)
+		}
+		
+		if *param == defaultParam {
+			*param = "TMP"
+			*height = "surface"
 		}
 
 		downloader.StartNOAADownloader(downloader.NOAADownloaderOptions{
