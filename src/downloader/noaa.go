@@ -33,12 +33,12 @@ var noaaModels = map[string]NOAAModel{
 		urlFormat:                     "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.%s/%s/atmos/gfs.t%sz.pgrb2.%s.f%s",
 		res:                           "0p25",
 		maxStep: map[int]int{
-			0:  180,
-			6:  120,
-			12: 180,
-			18: 120,
+			0:  384,
+			6:  384,
+			12: 384,
+			18: 384,
 		},
-		breakPoint: 78,
+		breakPoint: 120,
 	},
 }
 
@@ -226,7 +226,41 @@ func StartNOAADownloader(options NOAADownloaderOptions) map[int][]byte {
 	var wg sync.WaitGroup
 	errors := make(chan error, wdp.maxStep*len(params))
 
-	for step := 0; step < options.MaxStep; step++ {
+	if wdp.maxStep > options.ModelDetails.maxStep[timestamp.Hour()] {
+		wdp.maxStep = options.ModelDetails.maxStep[timestamp.Hour()]
+	}
+
+	firstLoop := wdp.maxStep
+
+	if wdp.maxStep >= wdp.modelDetails.breakPoint {
+		firstLoop = wdp.modelDetails.breakPoint
+	}
+
+	for step := 0; step < firstLoop; step++ {
+		wg.Add(1)
+		go func(step int, params []string) {
+			defer wg.Done()
+
+			url := wdp.getGribFileUrl(step, timestamp)
+
+			index, err := wdp.getIndexFile(url)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			for _, param := range params {
+
+				err = wdp.downloadAndProcessFile(url, index, param, 5)
+				if err != nil {
+					errors <- err
+					return
+				}
+			}
+		}(step, params)
+	}
+
+	for step := wdp.modelDetails.breakPoint; step <= wdp.maxStep; step += 3 {
 		wg.Add(1)
 		go func(step int, params []string) {
 			defer wg.Done()
