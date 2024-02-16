@@ -30,7 +30,7 @@ Downloading 8h T_2M from ICON-EU:
 docker run --rm -v ${PWD}/output:/app/output ghcr.io/hstin-de/gribdl dwd icon-eu --param=T_2M --maxStep=8
 ```
 
-Downloading 8h TMP from GFP:
+Downloading 8h TMP from GFS:
 ```bash
 docker run --rm -v ${PWD}/output:/app/output ghcr.io/hstin-de/gribdl noaa gfs --param=TMP --maxStep=8
 ```
