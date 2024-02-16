@@ -40,21 +40,6 @@ var noaaModels = map[string]NOAAModel{
 		},
 		breakPoint: 78,
 	},
-	// "icon-d2": {
-	// 	model:                         "icon-d2",
-	// 	openDataDeliveryOffsetMinutes: 540,
-	// 	intervalHours:                 12,
-	// 	grid:                          "icosahedral",
-	// 	area:                          "germany",
-	// 	urlFormat:                     "https://opendata.dwd.de/weather/nwp/%sL/grib/%s/%sL/%sL_%s_%s_single-level_%s%s_%s_2d_%sL.grib2.bz2",
-	// 	maxStep: map[int]int{
-	// 		0:  180,
-	// 		6:  120,
-	// 		12: 180,
-	// 		18: 120,
-	// 	},
-	// 	breakPoint: 24,
-	// }
 }
 
 type NOAADownloader struct {
@@ -102,8 +87,7 @@ func NewNOAADownloader(options NOAADownloaderOptions) *NOAADownloader {
 	}
 }
 
-func (wdp *NOAADownloader) getGribFileUrl(step int) string {
-	timestamp := wdp.getMostRecentModelTimestamp()
+func (wdp *NOAADownloader) getGribFileUrl(step int, timestamp time.Time) string {
 
 	run := timestamp.Format("20060102")
 	stepStr := fmt.Sprintf("%03d", step)
@@ -234,9 +218,9 @@ func StartNOAADownloader(options NOAADownloaderOptions) map[int][]byte {
 
 	wdp := NewNOAADownloader(options)
 
-	
-	log.Printf("[MAIN] Processing %s model for parameter %s up to %d steps starting from\n", wdp.modelName, wdp.param, wdp.maxStep)
+	timestamp := wdp.getMostRecentModelTimestamp()
 
+	log.Printf("[MAIN] Processing %s model for parameter %s up to %d steps starting from %s\n", wdp.modelName, wdp.param, wdp.maxStep, timestamp)
 	params := strings.Split(wdp.param, ",")
 
 	var wg sync.WaitGroup
@@ -247,7 +231,7 @@ func StartNOAADownloader(options NOAADownloaderOptions) map[int][]byte {
 		go func(step int, params []string) {
 			defer wg.Done()
 
-			url := wdp.getGribFileUrl(step)
+			url := wdp.getGribFileUrl(step, timestamp)
 
 			index, err := wdp.getIndexFile(url)
 			if err != nil {
